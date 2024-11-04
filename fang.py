@@ -77,17 +77,21 @@ def get_subdomain_file():
 # Function to check if a subdomain is valid
 def is_valid_subdomain(subdomain, domain):
     try:
-        response = requests.get(f"http://{subdomain}.{domain}", timeout=2)
-        return response.status_code == 200
+        # Check both HTTP and HTTPS
+        for scheme in ["http", "https"]:
+            response = requests.get(f"{scheme}://{subdomain}.{domain}", timeout=2)
+            if response.status_code == 200:
+                return True
     except requests.RequestException:
         return False
+    return False
 
 # Function to perform subdomain enumeration and save results
 def enumerate_subdomains(domain):
     subdomain_file = get_subdomain_file()
     results = []
 
-    # Simulate the enumeration process
+    print(colored("🦷 Scanning Subdomains...", "cyan", attrs=["bold"]))
     with open(subdomain_file, "r") as file:
         subdomains = file.readlines()
         valid_domains = []  # Store valid domains for printing
@@ -115,20 +119,25 @@ def enumerate_subdomains(domain):
     print(colored("\nNow we will start directory enumeration...", "cyan", attrs=["bold"]))
     enumerate_directories(domain)  # Call the directory enumeration function
 
-# Function to perform directory enumeration (placeholder implementation)
+# Function to perform directory enumeration
 def enumerate_directories(domain):
     # List of common directories for testing
-    directories = ["admin", "login", "uploads", "api", "dashboard", "images"]
+    common_directories = [
+        "admin", "login", "uploads", "api", "dashboard", "images", 
+        "css", "js", "static", "files", "scripts", "data"
+    ]
     results = []
 
     print(colored("\nScanning Directories...", "cyan", attrs=["bold"]))
-    for directory in tqdm(directories, desc="Scanning Directories"):
+    for directory in tqdm(common_directories, desc="Scanning Directories"):
         try:
-            response = requests.get(f"http://{domain}/{directory}", timeout=2)
-            if response.status_code == 200:
-                result = f"Valid directory found: {directory} at {domain}/{directory}\n"
-                results.append(result)
-                print(colored(result.strip(), "green"))
+            # Check both HTTP and HTTPS
+            for scheme in ["http", "https"]:
+                response = requests.get(f"{scheme}://{domain}/{directory}", timeout=2)
+                if response.status_code == 200:
+                    result = f"Valid directory found: {directory} at {domain}/{directory}\n"
+                    results.append(result)
+                    print(colored(result.strip(), "green"))
         except requests.RequestException:
             continue  # Ignore any request exceptions
 
