@@ -57,15 +57,30 @@ def run_intro():
     sys.stdout.write("\r" + " " * 20 + "\r")  # Clear line after loading
     print_intro()
 
+# Function to create a default subdomain file if it doesn't exist
+def create_default_subdomain_file():
+    default_subdomains = [
+        "www", "api", "mail", "blog", "support", "dev", "test", "secure", "shop", "m", "forum"
+    ]
+    with open("subdomain.txt", "w") as file:
+        for subdomain in default_subdomains:
+            file.write(f"{subdomain}\n")
+    print(colored("Created 'subdomain.txt' with default subdomains.", "yellow"))
+
 # Function to get the default subdomain file
 def get_subdomain_file():
-    subdomain_file = "subdomain.txt"
+    if not os.path.isfile("subdomain.txt"):
+        print(colored("Subdomain file 'subdomain.txt' not found!", "red"))
+        create_default_subdomain_file()  # Create the file if it doesn't exist
+    return "subdomain.txt"
 
-    if not os.path.isfile(subdomain_file):
-        print(colored(f"Subdomain file '{subdomain_file}' not found!", "red"))
-        sys.exit(1)
-
-    return subdomain_file
+# Function to check if a subdomain is valid
+def is_valid_subdomain(subdomain, domain):
+    try:
+        response = requests.get(f"http://{subdomain}.{domain}", timeout=2)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
 
 # Function to perform subdomain enumeration and save results
 def enumerate_subdomains(domain):
@@ -76,17 +91,12 @@ def enumerate_subdomains(domain):
     with open(subdomain_file, "r") as file:
         subdomains = file.readlines()
         valid_domains = []  # Store valid domains for printing
-        for subdomain in tqdm(subdomains, desc="Enumerating subdomains"):
+        for subdomain in tqdm(subdomains, desc="Scanning Subdomains"):
             subdomain = subdomain.strip()
-            # Simulated request (replace with actual request logic)
-            try:
-                response = requests.get(f"http://{subdomain}.{domain}", timeout=1)
-                if response.status_code == 200:
-                    valid_domain = f"{subdomain}.{domain}"
-                    results.append(f"{valid_domain}\n")
-                    valid_domains.append(valid_domain)  # Collect valid domains
-            except requests.RequestException:
-                continue  # Ignore any request exceptions
+            if is_valid_subdomain(subdomain, domain):
+                valid_domain = f"{subdomain}.{domain}"
+                results.append(f"{valid_domain}\n")
+                valid_domains.append(valid_domain)  # Collect valid domains
 
     # Write results to a file
     output_file = f"{domain}_subdomains.txt"
@@ -98,11 +108,34 @@ def enumerate_subdomains(domain):
         print(colored("\nValid Subdomains Found:", "green", attrs=["bold"]))
         for valid in valid_domains:
             print(colored(valid, "green"))
+    else:
+        print(colored("\nNo valid subdomains found.", "yellow"))
 
     # Announce start of directory enumeration
     print(colored("\nNow we will start directory enumeration...", "cyan", attrs=["bold"]))
-    # Placeholder for directory enumeration function call
-    # enumerate_directories(domain)  # Uncomment this line once you implement the directory enumeration logic
+    enumerate_directories(domain)  # Call the directory enumeration function
+
+# Function to perform directory enumeration (placeholder implementation)
+def enumerate_directories(domain):
+    # List of common directories for testing
+    directories = ["admin", "login", "uploads", "api", "dashboard", "images"]
+    results = []
+
+    print(colored("\nScanning Directories...", "cyan", attrs=["bold"]))
+    for directory in tqdm(directories, desc="Scanning Directories"):
+        try:
+            response = requests.get(f"http://{domain}/{directory}", timeout=2)
+            if response.status_code == 200:
+                result = f"Valid directory found: {directory} at {domain}/{directory}\n"
+                results.append(result)
+                print(colored(result.strip(), "green"))
+        except requests.RequestException:
+            continue  # Ignore any request exceptions
+
+    # Save directory results to a file
+    directory_output_file = f"{domain}_directories.txt"
+    with open(directory_output_file, "w") as dir_outfile:
+        dir_outfile.writelines(results)
 
 # Main function to parse arguments and run the program
 if __name__ == "__main__":
@@ -112,4 +145,3 @@ if __name__ == "__main__":
 
     run_intro()  # Display intro and loading animation
     enumerate_subdomains(args.domain)  # Start enumeration
-_subdomains(subdomains_file, args.enumerate, args.rate)
