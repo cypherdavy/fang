@@ -1,6 +1,6 @@
 # 🦷 Fang - The Aggressive Subdomain & Directory Enumerator
 
-![Fang Logo](https://via.placeholder.com/600x200.png?text=Fang+Tool+Logo)
+![Fang Logo](https://ibb.co/qypYmfH)
 
 Welcome to **Fang**! This powerful tool is designed for cybersecurity enthusiasts and ethical hackers looking to hunt for vulnerabilities through subdomain and directory enumeration. Whether you're performing a security assessment or simply exploring the depths of the web, **Fang** has your back!
 
