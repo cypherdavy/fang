@@ -28,7 +28,7 @@ Welcome to **Fang**! This powerful tool is designed for cybersecurity enthusiast
 1. **Clone the repository**:
    ```bash
   git clone https://github.com/cypherdavy/fang.git
-   cd fang
+   cd fang ```
 
 ## Usage
 
